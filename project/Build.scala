@@ -275,7 +275,9 @@ object Finagle extends Build {
     id = "finagle-stream",
     base = file("finagle-stream"),
     settings = Project.defaultSettings ++
-      sharedSettings
+      sharedSettings ++ Seq(
+        version := "6.5.0-jdanbrown-0"
+      )
   ).settings(
     name := "finagle-stream"
   ).dependsOn(finagleCore, finagleKestrel, finagleTest % "test")
