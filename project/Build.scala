@@ -153,7 +153,9 @@ object Finagle extends Build {
     id = "finagle-core",
     base = file("finagle-core"),
     settings = Project.defaultSettings ++
-      sharedSettings
+      sharedSettings ++ Seq(
+        version := "6.5.0-jdanbrown-0"
+      )
   ).settings(
     name := "finagle-core",
     libraryDependencies ++= Seq(nettyLib, util("app"), util("core"), util("collection"),
