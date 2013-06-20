@@ -1,7 +1,7 @@
 package com.twitter.finagle.http
 
 import com.twitter.concurrent.Broker
-import com.twitter.util.{Duration, Future}
+import com.twitter.util.{Duration, Future, Promise}
 import java.io.{InputStream, InputStreamReader, OutputStream, OutputStreamWriter, Reader, Writer}
 import java.util.{Iterator => JIterator}
 import java.nio.charset.Charset
@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
  */
 abstract class Message extends HttpMessage {
 
-  private[this] val chunks = new Broker[HttpChunk]
+  private[this] val chunks = new Broker[(HttpChunk, Promise[Unit])]
 
   def isRequest: Boolean
   def isResponse = !isRequest
@@ -387,15 +387,25 @@ abstract class Message extends HttpMessage {
   }
 
   /** Write to the response stream. */
-  def writeChunk(buf: ChannelBuffer) {
-    if (buf.readable()) chunks ! new DefaultHttpChunk(buf)
+  def writeChunk(chunk: HttpChunk): Future[Unit] = {
+    val p = new Promise[Unit]
+    chunks ! (chunk, p) flatMap { case () => p }
+  }
+
+  /** Write to the response stream. */
+  def writeChunk(buf: ChannelBuffer): Future[Unit] = {
+    if (buf.readable()) {
+      writeChunk(new DefaultHttpChunk(buf))
+    } else {
+      Future.Unit
+    }
   }
 
   /** End the response stream. */
-  def close() { chunks ! HttpChunk.LAST_CHUNK }
+  def close(): Future[Unit] = writeChunk(HttpChunk.LAST_CHUNK)
 
   /** Read a chunk. */
-  def readChunk(): Future[HttpChunk] = chunks?
+  def readChunk(): Future[(HttpChunk, Promise[Unit])] = chunks?
 }
 
 

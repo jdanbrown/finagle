@@ -16,15 +16,25 @@ class ResponseEncoder extends SimpleChannelDownstreamHandler {
                              future: ChannelFuture,
                              response: Response,
                              remoteAddr: SocketAddress) {
-    response.readChunk() onSuccess { chunk =>
+    response.readChunk() onSuccess { case (chunk, chunkPromise) =>
       val writeFuture = Channels.future(ctx.getChannel())
       Channels.write(ctx, writeFuture, chunk, remoteAddr)
       writeFuture.addListener(new ChannelFutureListener() {
         def operationComplete(f: ChannelFuture) {
-          if (f.isCancelled()) future.cancel()
-          else if (!f.isSuccess()) future.setFailure(f.getCause())
-          else if (chunk.isLast()) future.setSuccess()
-          else continue(ctx, future, response, remoteAddr)
+          if (f.isCancelled()) {
+            chunkPromise.cancel()
+            future.cancel()
+          } else if (!f.isSuccess()) {
+            chunkPromise.setException(f.getCause())
+            future.setFailure(f.getCause())
+          } else {
+            chunkPromise.setValue(())
+            if (chunk.isLast()) {
+              future.setSuccess()
+            } else {
+              continue(ctx, future, response, remoteAddr)
+            }
+          }
         }
       })
     }
