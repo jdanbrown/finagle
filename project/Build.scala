@@ -337,7 +337,9 @@ object Finagle extends Build {
     id = "finagle-redis",
     base = file("finagle-redis"),
     settings = Project.defaultSettings ++
-      sharedSettings
+      sharedSettings ++ Seq(
+        version := "6.5.0-jdanbrown-0"
+      )
   ).settings(
     name := "finagle-redis",
     libraryDependencies ++= Seq(
