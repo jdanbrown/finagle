@@ -268,7 +268,9 @@ object Finagle extends Build {
     id = "finagle-http",
     base = file("finagle-http"),
     settings = Project.defaultSettings ++
-      sharedSettings
+      sharedSettings ++ Seq(
+        version := "6.11.1-jdanbrown-0"
+      )
   ).settings(
     name := "finagle-http",
     libraryDependencies ++= Seq(
