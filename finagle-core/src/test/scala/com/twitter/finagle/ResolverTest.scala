@@ -1,7 +1,7 @@
 package com.twitter.finagle
 
 import com.twitter.util.{Return, Throw, Var}
-import java.net.SocketAddress
+import java.net.{InetSocketAddress, SocketAddress}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -74,4 +74,5 @@ class ResolverTest extends FunSuite {
     val binding = Resolver.evalLabeled("test!xyz")
     assert(binding._2 === "test!xyz")
   }
+
 }

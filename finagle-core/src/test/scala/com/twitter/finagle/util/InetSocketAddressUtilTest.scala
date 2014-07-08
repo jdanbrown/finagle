@@ -1,5 +1,6 @@
 package com.twitter.finagle.util
 
+import com.twitter.util.RandomSocket
 import java.net.{InetAddress, UnknownHostException, InetSocketAddress}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -7,6 +8,9 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class InetSocketAddressUtilTest extends FunSuite {
+  val port1 = RandomSocket.nextPort()
+  val port2 = RandomSocket.nextPort()
+
   test("toPublic") {
     try {
       val myAddr = InetAddress.getLocalHost
@@ -27,6 +31,15 @@ class InetSocketAddressUtilTest extends FunSuite {
       // this could happen if you don't have a resolvable hostname or a public ip
       case e: UnknownHostException => info("Skipping tests because your network is misconfigured")
     }
+  }
+
+  test("resolveHostPorts") {
+    assert(InetSocketAddressUtil.resolveHostPorts(Seq()).isEmpty)
+    intercept[UnknownHostException] { InetSocketAddressUtil.resolveHostPorts(Seq(("gobble-d-gook", port1))) }
+
+    assert(InetSocketAddressUtil.resolveHostPorts(Seq(("127.0.0.1", port1))) === Set(new InetSocketAddress("127.0.0.1", port1)))
+    assert(InetSocketAddressUtil.resolveHostPorts(Seq(("127.0.0.1", port1), ("127.0.0.1", port2))) ===
+      Set(new InetSocketAddress("127.0.0.1", port1), new InetSocketAddress("127.0.0.1", port2)))
   }
 
   test("parseHosts") {
