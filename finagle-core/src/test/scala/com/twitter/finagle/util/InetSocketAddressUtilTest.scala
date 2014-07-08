@@ -1,5 +1,6 @@
 package com.twitter.finagle.util
 
+import com.twitter.util.RandomSocket
 import java.net.{InetAddress, UnknownHostException, InetSocketAddress}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -7,6 +8,9 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class InetSocketAddressUtilTest extends FunSuite {
+  val port1 = RandomSocket.nextPort()
+  val port2 = RandomSocket.nextPort()
+
   test("toPublic") {
     try {
       val myAddr = InetAddress.getLocalHost
